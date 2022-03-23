@@ -17,6 +17,8 @@
 #define MCP342X_A2				0x6A
 #define MCP342X_A3				0x6B
 #define MCP342X_A4				0x6C
-
+#define MCP342X_A5				0x6D
+#define MCP342X_A6				0x6E
+#define MCP342X_A7				0x6F
 
 #endif /* INC_MCP342X_H_ */
