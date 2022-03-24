@@ -52,20 +52,18 @@
 
 class MCP342X_I2C_OPRTS {
   public:
+	 uint8_t _IIC_ADDR;
+	 I2C_HandleTypeDef *i2c;
 
-	void i2c_init(I2C_HandleTypeDef *hi2c){
+	 void i2c_init(I2C_HandleTypeDef *hi2c){
 		i2c = hi2c;
 	}
     void set_i2c_addr(uint8_t address){
     	_IIC_ADDR = address;
     }
 
-    HAL_StatusTypeDef IIC_read_bytes(u8 start_reg, u8* data, u32 data_len);
-
-  private:
-    I2C_HandleTypeDef *i2c;
-    uint8_t _IIC_ADDR;
-
+    HAL_StatusTypeDef I2C_read_bytes(uint8_t start_reg, uint8_t* data, uint32_t data_len);
+    HAL_StatusTypeDef I2C_write_bytes(uint8_t start_reg, uint8_t* data, uint32_t data_len);
 };
 
 class MCP342X: public MCP342X_I2C_OPRTS {
@@ -80,8 +78,8 @@ public:
 	uint8_t getConfig(void);
 
 	// conversion
-	bool startConversion(void);
-	bool startConversion(uint8_t channel);
+	HAL_StatusTypeDef startConversion(void);
+	HAL_StatusTypeDef startConversion(uint8_t channel);
 
 	//read the adc result
 	uint8_t checkResult(int16_t *data);
