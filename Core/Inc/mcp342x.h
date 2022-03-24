@@ -48,7 +48,8 @@
 #define MCP342X_GAIN_4X					0x02
 #define MCP342X_GAIN_8X					0x03
 
-#define MXP342X_RDY						0x80
+#define MCP342X_RDY						0x80
+#define MCP342X_RESET					0x06
 
 class MCP342X_I2C_OPRTS {
   public:
@@ -62,8 +63,8 @@ class MCP342X_I2C_OPRTS {
     	_IIC_ADDR = address;
     }
 
-    HAL_StatusTypeDef I2C_read_bytes(uint8_t start_reg, uint8_t* data, uint32_t data_len);
-    HAL_StatusTypeDef I2C_write_bytes(uint8_t start_reg, uint8_t* data, uint32_t data_len);
+    uint8_t I2C_read_bytes(uint8_t* data, uint16_t data_len);
+    uint8_t I2C_write_bytes(uint8_t* data, uint16_t data_len);
 };
 
 class MCP342X: public MCP342X_I2C_OPRTS {
@@ -73,17 +74,22 @@ public:
 	~MCP342X();
 
 	bool isConnected(void);
+	void reset(void);
 
 	void configure(uint8_t config);
 	uint8_t getConfig(void);
 
 	// conversion
-	HAL_StatusTypeDef startConversion(void);
-	HAL_StatusTypeDef startConversion(uint8_t channel);
+	uint8_t startConversion(void);
+	uint8_t startConversion(uint8_t channel);
 
 	//read the adc result
-	uint8_t checkResult(int16_t *data);
-	uint8_t checkResult(int32_t *data);
+	uint8_t getResult(int16_t *data);
+	uint8_t getResult(int32_t *data);
+
+	uint8_t checkforResult(int16_t *data);
+	uint8_t checkforResult(int32_t *data);
+
 private:
 	uint8_t configReg;
 	uint8_t channel;
