@@ -50,18 +50,45 @@
 
 #define MXP342X_RDY						0x80
 
-class MCP9600_IIC_OPRTS {
+class MCP342X_I2C_OPRTS {
   public:
 
-	void IIC_begin(I2C_HandleTypeDef *hi2c){
+	void i2c_init(I2C_HandleTypeDef *hi2c){
 		i2c = hi2c;
 	}
-    void set_iic_addr(u8 IIC_ADDR);
-    HAL IIC_read_bytes(u8 start_reg, u8* data, u32 data_len);
+    void set_i2c_addr(uint8_t address){
+    	_IIC_ADDR = address;
+    }
+
+    HAL_StatusTypeDef IIC_read_bytes(u8 start_reg, u8* data, u32 data_len);
+
   private:
     I2C_HandleTypeDef *i2c;
     uint8_t _IIC_ADDR;
 
+};
+
+class MCP342X: public MCP342X_I2C_OPRTS {
+public:
+	MCP342X();
+	MCP342X(uint8_t I2C_ADDR=MCP342X_DEFAULT_ADDRESS);
+	~MCP342X();
+
+	bool isConnected(void);
+
+	void configure(uint8_t config);
+	uint8_t getConfig(void);
+
+	// conversion
+	bool startConversion(void);
+	bool startConversion(uint8_t channel);
+
+	//read the adc result
+	uint8_t checkResult(int16_t *data);
+	uint8_t checkResult(int32_t *data);
+private:
+	uint8_t configReg;
+	uint8_t channel;
 };
 
 #endif /* INC_MCP342X_H_ */
