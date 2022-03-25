@@ -41,12 +41,14 @@
 #define MCP342X_SIZE_14BIT				0x04
 #define MCP342X_SIZE_16BIT				0x08
 #define MCP342X_SIZE_18BIT				0x0C
+#define MCP342X_SIZE_MASK				0x0C
 
 // Gain Definitions
 #define MCP342X_GAIN_1X					0x00
 #define MCP342X_GAIN_2X					0x01
 #define MCP342X_GAIN_4X					0x02
 #define MCP342X_GAIN_8X					0x03
+#define MCP342X_GAIN_MASK				0x03
 
 #define MCP342X_RDY						0x80
 #define MCP342X_RESET					0x06
