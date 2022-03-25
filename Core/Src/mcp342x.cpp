@@ -109,11 +109,45 @@ uint8_t MCP342X::getResult(int32_t *data) {
 
 uint8_t MCP342X::checkforResult(int16_t *data) {
 
+	uint8_t adcStatus;
+	uint8_t adc_data[3];
 
+	if((configReg & MCP342X_SIZE_MASK) == MCP342X_SIZE_18BIT){
+		return 0xFF;
+	}
+
+	if(I2C_read_bytes(adc_data, 3) == HAL_OK){
+		((uint8_t*)data)[1] = adc_data[0];
+		((uint8_t*)data)[0] = adc_data[1];
+		adcStatus = adc_data[2];
+	} else{
+		return 0xFF;
+	}
+
+
+	return adcStatus;
 }
 
 uint8_t MCP342X::checkforResult(int32_t *data){
+	uint8_t adcStatus;
+	uint8_t adc_data[4];
 
+	if((configReg & MCP342X_SIZE_MASK) != MCP342X_SIZE_18BIT){
+		return 0xFF;
+	}
+
+	if(I2C_read_bytes(adc_data, 4) == HAL_OK){
+		((uint8_t*)data)[3] = adc_data[0];
+		((uint8_t*)data)[2] = adc_data[1];
+		((uint8_t*)data)[1] = adc_data[2];
+		adcStatus = adc_data[3];
+	} else{
+		return 0xFF;
+	}
+
+	*data = (*data) >> 8;
+
+	return adcStatus;
 }
 
 uint8_t MCP342X_I2C_OPRTS::I2C_read_bytes(uint8_t *data, uint16_t data_len) {

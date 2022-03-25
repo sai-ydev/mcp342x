@@ -58,7 +58,7 @@ class MCP342X_I2C_OPRTS {
 	 uint8_t _IIC_ADDR;
 	 I2C_HandleTypeDef *i2c;
 
-	 void i2c_init(I2C_HandleTypeDef *hi2c){
+	 void init(I2C_HandleTypeDef *hi2c){
 		i2c = hi2c;
 	}
     void set_i2c_addr(uint8_t address){

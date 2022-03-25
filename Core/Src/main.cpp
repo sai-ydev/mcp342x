@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
+#include "mcp342x.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,9 +63,11 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+extern "C" {
 int __io_putchar(int ch) {
 	HAL_UART_Transmit(&huart1, (uint8_t*) &ch, 1, 0xFFFF);
 	return ch;
+}
 }
 
 /* USER CODE END 0 */
@@ -75,6 +78,7 @@ int __io_putchar(int ch) {
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
+	MCP342X mcp3422(0x69);
 
 	/* USER CODE END 1 */
 
@@ -100,39 +104,47 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_USART1_UART_Init();
 	/* USER CODE BEGIN 2 */
+	mcp3422.init(&hi2c1);
 
-	printf("\r\n");
 
-	printf("Scanning I2C bus:\r\n");
-	HAL_StatusTypeDef result;
-	uint8_t i;
-	for (i = 1; i < 128; i++) {
-		/*
-		 * the HAL wants a left aligned i2c address
-		 * &hi2c1 is the handle
-		 * (uint16_t)(i<<1) is the i2c address left aligned
-		 * retries 2
-		 * timeout 2
-		 */
-		result = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t) (i << 1), 2, 2);
-		if (result != HAL_OK) // HAL_ERROR or HAL_BUSY or HAL_TIMEOUT
-				{
-			printf("."); // No ACK received at that address
-		}
-		if (result == HAL_OK) {
-			printf("0x%X", i); // Received an ACK at that address
-		}
+	if(!mcp3422.isConnected()){
+		printf("Initialization Failed \r\n");
+		Error_Handler();
 	}
-	printf("\r\n");
+
+
+
+	uint8_t config = (MCP3342X_MODE_CONTINUOUS |
+					  MCP342X_CHANNEL_1 |
+					  MCP342X_CHANNEL_2 |
+					  MCP342X_SIZE_16BIT |
+					  MCP342X_GAIN_1X
+					);
+	mcp3422.configure(config);
+
+
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
+		static int16_t raw_sample;
+		float voltage;
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
+		mcp3422.startConversion(MCP342X_CHANNEL_1);
+		mcp3422.getResult(&raw_sample);
+		voltage = (raw_sample * 2048) / 32767;
+
+		printf("Channel 1:\r\n Result = %4.2fmV\r\n", voltage);
+
+		mcp3422.startConversion(MCP342X_CHANNEL_2);
+		mcp3422.getResult(&raw_sample);
+		voltage = (raw_sample * 2048) / 32767;
+		printf("Channel 2:\r\n Result = %4.2fmV\r\n", voltage);
+		HAL_Delay(1000);
 	}
 	/* USER CODE END 3 */
 }
@@ -217,14 +229,14 @@ static void MX_DFSDM1_Init(void) {
 	hdfsdm1_channel1.Instance = DFSDM1_Channel1;
 	hdfsdm1_channel1.Init.OutputClock.Activation = ENABLE;
 	hdfsdm1_channel1.Init.OutputClock.Selection =
-			DFSDM_CHANNEL_OUTPUT_CLOCK_SYSTEM;
+	DFSDM_CHANNEL_OUTPUT_CLOCK_SYSTEM;
 	hdfsdm1_channel1.Init.OutputClock.Divider = 2;
 	hdfsdm1_channel1.Init.Input.Multiplexer = DFSDM_CHANNEL_EXTERNAL_INPUTS;
 	hdfsdm1_channel1.Init.Input.DataPacking = DFSDM_CHANNEL_STANDARD_MODE;
 	hdfsdm1_channel1.Init.Input.Pins = DFSDM_CHANNEL_FOLLOWING_CHANNEL_PINS;
 	hdfsdm1_channel1.Init.SerialInterface.Type = DFSDM_CHANNEL_SPI_RISING;
 	hdfsdm1_channel1.Init.SerialInterface.SpiClock =
-			DFSDM_CHANNEL_SPI_CLOCK_INTERNAL;
+	DFSDM_CHANNEL_SPI_CLOCK_INTERNAL;
 	hdfsdm1_channel1.Init.Awd.FilterOrder = DFSDM_CHANNEL_FASTSINC_ORDER;
 	hdfsdm1_channel1.Init.Awd.Oversampling = 1;
 	hdfsdm1_channel1.Init.Offset = 0;
@@ -331,7 +343,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOE,
-			M24SR64_Y_RF_DISABLE_Pin | M24SR64_Y_GPO_Pin | ISM43362_RST_Pin,
+	M24SR64_Y_RF_DISABLE_Pin | M24SR64_Y_GPO_Pin | ISM43362_RST_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
@@ -345,7 +357,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOD,
-			USB_OTG_FS_PWR_EN_Pin | PMOD_RESET_Pin | STSAFE_A100_RESET_Pin,
+	USB_OTG_FS_PWR_EN_Pin | PMOD_RESET_Pin | STSAFE_A100_RESET_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
